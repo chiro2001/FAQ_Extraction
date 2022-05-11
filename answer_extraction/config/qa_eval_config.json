@@ -1,0 +1,19 @@
+{
+  "model_name_or_path": "/users5/lbqin/hsj/domain_adaptive/question_generation/data/bert_qa_3",
+  "tokenizer_name": "/users5/lbqin/hsj/domain_adaptive/question_generation/data/bert_qa_3",
+  "train_file": "data/train.json",
+  "validation_file": "data/dev.json",
+  "output_dir": "data/bert_qa",
+  "save_dir": "result/dev_result_pretrain_bert.json",
+  "per_device_train_batch_size": 8,
+  "per_device_eval_batch_size": 8,
+  "gradient_accumulation_steps": 1,
+  "overwrite_output_dir": true,
+  "do_train": false,
+  "do_eval": true,
+  "do_predict": true,
+  "num_train_epochs": 50,
+  "learning_rate": 1e-4,
+  "save_steps": 5000,
+  "max_answer_length": 2000
+}

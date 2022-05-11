@@ -1,0 +1,19 @@
+{
+  "model_name_or_path": "hfl/chinese-roberta-wwm-ext",
+  "tokenizer_name": "hfl/chinese-roberta-wwm-ext",
+  "train_file": "data/train.json",
+  "validation_file": "data/dev.json",
+  "output_dir": "data/roberta-wwm",
+  "save_dir": "result/dev_result_pretrain_bert.json",
+  "per_device_train_batch_size": 8,
+  "per_device_eval_batch_size": 8,
+  "gradient_accumulation_steps": 1,
+  "overwrite_output_dir": true,
+  "do_train": true,
+  "do_eval": true,
+  "do_predict": true,
+  "num_train_epochs": 50,
+  "learning_rate": 5e-5,
+  "save_steps": 5000,
+  "max_answer_length": 5000
+}
