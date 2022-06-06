@@ -20,17 +20,16 @@ from tqdm import tqdm
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from utils import json2df, preprocess, preprocess_no_passage
 
-
 # os.environ["TF_KERAS"]='1'
 
 # 基本参数
-n = 5               # 交叉验证
-max_q_len = 66     # 问题最大长度
-max_a_len = 170      # 答案最大长度
-batch_size = 4      # 批大小
-epochs = 20         # 迭代次数
-SEED = 2022         # 随机种子
-topk = 1            # beam search topk
+n = 5  # 交叉验证
+max_q_len = 66  # 问题最大长度
+max_a_len = 170  # 答案最大长度
+batch_size = 4  # 批大小
+epochs = 20  # 迭代次数
+SEED = 2022  # 随机种子
+topk = 1  # beam search topk
 
 # nezha配置
 config_path = './pre_trained_model/NEZHA-Base-WWM/bert_config.json'
@@ -45,26 +44,28 @@ token_dict, keep_tokens = load_vocab(
 )
 tokenizer = Tokenizer(token_dict, do_lower_case=True)
 
+
 def load_data(filename):
     """加载数据。"""
-    df = pd.read_csv(filename,encoding="UTF-8")# csv转DataFrame
-    df = preprocess_no_passage(df)     # 数据预处理
+    df = pd.read_csv(filename, encoding="UTF-8")  # csv转DataFrame
+    df = preprocess_no_passage(df)  # 数据预处理
 
     # 文本截断
     D = list()
     for _, row in df.iterrows():
         question = row['question']
         answer = row['answer']
-        if len(answer) < max_a_len -2:
+        if len(answer) < max_a_len - 2:
             D.append((answer, question))
         else:
-            a = answer[:max_a_len-2]
+            a = answer[:max_a_len - 2]
             D.append((a, question))
     return D
 
 
 class data_generator(DataGenerator):
     """数据生成器。"""
+
     def __init__(self, data, batch_size=32, buffer_size=None, random=False):
         super().__init__(data, batch_size, buffer_size)
         self.random = random
@@ -110,9 +111,9 @@ def build_model():
         checkpoint_path=checkpoint_path,
         model="nezha",
         application='unilm',
-        keep_tokens=keep_tokens, # 只保留keep_tokens中的字，精简原字表
+        keep_tokens=keep_tokens,  # 只保留keep_tokens中的字，精简原字表
     )
-    o_in = Input(shape=(None, ))
+    o_in = Input(shape=(None,))
     train_model = Model(model.inputs + [o_in], model.outputs + [o_in])
     # 交叉熵作为loss，并mask掉输入部分的预测
     y_true = train_model.input[2][:, 1:]  # 目标tokens
@@ -124,7 +125,7 @@ def build_model():
     train_model.add_loss(cross_entropy)
     train_model.compile(optimizer=Adam(1e-5))
 
-    return model,train_model
+    return model, train_model
 
 
 def adversarial_training(model, embedding_name, epsilon=1.):
@@ -170,9 +171,9 @@ def adversarial_training(model, embedding_name, epsilon=1.):
     model.train_function = train_function  # 覆盖原训练函数
 
 
-
 class QuestionGeneration(AutoRegressiveDecoder):
     """通过beam search来生成问题。"""
+
     def __init__(self, model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
@@ -184,7 +185,6 @@ class QuestionGeneration(AutoRegressiveDecoder):
         segment_ids = np.concatenate([segment_ids, np.ones_like(output_ids)], 1)
         return self.model.predict([token_ids, segment_ids])[:, -1]
 
-
     def generate(self, answer, topk):
         a_token_ids, _ = tokenizer.encode(answer, maxlen=max_a_len)
         token_ids = a_token_ids
@@ -195,6 +195,7 @@ class QuestionGeneration(AutoRegressiveDecoder):
 
 class Evaluator(keras.callbacks.Callback):
     """计算验证集rouge_l。"""
+
     def __init__(self, valid_data, qg, topk):
         super().__init__()
         self.rouge = Rouge()
@@ -218,6 +219,7 @@ class Evaluator(keras.callbacks.Callback):
             f'bleu:{result["bleu"]:.5f}',
             end=''
         )
+
     # topk=1 beam search
     def evaluate(self, data, topk):
         total = 0
@@ -304,7 +306,8 @@ def do_train():
                 save_best_only=True,
                 verbose=1,
                 mode='max'),
-            TensorBoard(log_dir='./output/sougou_logs', histogram_freq=0, batch_size=batch_size, write_graph=False, write_grads=False,
+            TensorBoard(log_dir='./output/sougou_logs', histogram_freq=0, batch_size=batch_size, write_graph=False,
+                        write_grads=False,
                         write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None,
                         embeddings_data=None, update_freq='epoch')
         ]
@@ -322,28 +325,8 @@ def do_train():
 
         KTF.clear_session()
         sess.close()
-        break #只取第一折的模型
+        break  # 只取第一折的模型
 
 
 if __name__ == '__main__':
     do_train()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

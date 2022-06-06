@@ -24,7 +24,7 @@ model = build_transformer_model(
     checkpoint_path=checkpoint_path,
     model="nezha",
     application='unilm',
-    keep_tokens=keep_tokens, # 只保留keep_tokens中的字，精简原字表
+    keep_tokens=keep_tokens,  # 只保留keep_tokens中的字，精简原字表
 )
 
 # 编码测试
